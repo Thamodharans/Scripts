@@ -12,6 +12,7 @@ This function runs ONCE and exits.
 """
 
 import io
+import os
 import re
 import datetime
 import pandas as pd
@@ -192,12 +193,14 @@ def build_rss(xlsx_bytes, filename):
 # MAIN ENGINE — THIS IS WHAT FASTAPI / CELERY WILL CALL
 # ==========================================================
 
+
 def run_job(job: dict) -> dict:
     """
     Runs ONE job.
-    Returns all artifacts in memory.
+    Always writes artifacts to disk.
     """
-
+    print("WORKER STARTED FOR:", job["job_id"])
+    output_dir = job["output_dir"]
     artifacts = {}
 
     # 1. Parse input
@@ -222,21 +225,38 @@ def run_job(job: dict) -> dict:
         gprop
     )
 
-    # 3. Apply filters
-    # if keywords:
-        # rising_df = keywords_filter(rising_df, keywords)
-        # top_df = keywords_filter(top_df, keywords)
+    # 3. Generate XLSX (bytes)
+    rising_xlsx_bytes = build_xlsx(rising_df, job["query_identifier"], timeframe, geo, rising=True)
+    top_xlsx_bytes = build_xlsx(top_df, job["query_identifier"], timeframe, geo, rising=False)
 
-    # 4. Generate XLSX
-    rising_xlsx = build_xlsx(rising_df, job["query_identifier"], timeframe, geo, rising=True)
-    top_xlsx = build_xlsx(top_df, job["query_identifier"], timeframe, geo, rising=False)
+    # 4. Write XLSX to disk
+    base = job["filenames"]
+    rising_xlsx_path = os.path.join(output_dir,  f"{base}-rising.xlsx")
+    with open(rising_xlsx_path, "wb") as f:
+        f.write(rising_xlsx_bytes)
 
-    artifacts["rising.xlsx"] = rising_xlsx
-    artifacts["top.xlsx"] = top_xlsx
+    top_xlsx_path = os.path.join(output_dir,  f"{base}-top.xlsx")
+    with open(top_xlsx_path, "wb") as f:
+        f.write(top_xlsx_bytes)
 
-    # 5. Generate RSS
-    artifacts["rising.rss"] = build_rss(rising_xlsx, "rising.rss")
-    artifacts["top.rss"] = build_rss(top_xlsx, "top.rss")
+    # 5. Generate RSS (bytes)
+    rising_rss_bytes = build_rss(rising_xlsx_bytes,  f"{base}-rising.rss")
+    top_rss_bytes = build_rss(top_xlsx_bytes,  f"{base}-top.rss")
+
+    # 6. Write RSS to disk
+    rising_rss_path = os.path.join(output_dir, f"{base}-rising.rss")
+    with open(rising_rss_path, "wb") as f:
+        f.write(rising_rss_bytes)
+
+    top_rss_path = os.path.join(output_dir, f"{base}-top.rss")
+    with open(top_rss_path, "wb") as f:
+        f.write(top_rss_bytes)
+
+    # 7. Return real paths
+    artifacts["rising.xlsx"] = rising_xlsx_path
+    artifacts["top.xlsx"] = top_xlsx_path
+    artifacts["rising.rss"] = rising_rss_path
+    artifacts["top.rss"] = top_rss_path
 
     return {
         "status": "success",
