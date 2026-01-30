@@ -27,10 +27,12 @@ while True:
             "query_url": job["query_url"],
             "interval": job["interval"],
             "filenames": job["filenames"],
+            "group": job.get("group", "default"),
             "keywords": job.get("keywords"),
             "words_count": job.get("words_count", 0),
         }
 
-        queue.enqueue(run_job, job_id, row, payload)
+        queue.enqueue(run_job, job_id, row, payload, job_timeout=900)
+
 
     time.sleep(10)

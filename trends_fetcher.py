@@ -1,3 +1,4 @@
+#trends_fetcher.py
 import time
 import requests
 from termcolor import cprint

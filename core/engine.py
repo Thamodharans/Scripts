@@ -102,10 +102,14 @@ def get_related_queries(trends_fetcher, query, category, timeframe, timezone, re
     if data["top"]:
         top_df = pd.DataFrame(data["top"])[["query", "extracted_value"]]
         top_df.columns = ["query", "value"]
+        # new 
+        top_df["query"] = top_df["query"].fillna("").astype(str)
 
     if data["rising"]:
         rising_df = pd.DataFrame(data["rising"])[["query", "extracted_value"]]
         rising_df.columns = ["query", "value"]
+        # new
+        rising_df["query"] = rising_df["query"].fillna("").astype(str)
 
     return rising_df, top_df
 
@@ -114,25 +118,34 @@ def get_related_queries(trends_fetcher, query, category, timeframe, timezone, re
 # STEP 3 — Filters
 # =====================================
 
-def keywords_filter(df, keywords):
-    if not keywords or df.empty:
+def keywords_filter(queries, keywords):
+    if keywords is None or queries.empty:
+        return queries
+    pattern = r'\b(?:{})\b'.format('|'.join(map(re.escape, keywords)))
+    # return queries[queries['query'].str.contains(pattern, case=False)]
+    return queries[queries['query'].fillna("").str.contains(pattern, case=False)]
+
+
+
+def words_count_filter(df, words_count):
+    if words_count <= 0:
         return df
-    pattern = r"\b(?:{})\b".format("|".join(map(re.escape, keywords)))
-    return df[df["query"].str.contains(pattern, case=False)]
+    # return df[df["query"].str.split().str.len() >= words_count]
+    return df[df["query"].fillna("").str.split().str.len() >= words_count]
+
 
 
 def unique_queries_filter(df):
     seen = set()
     drop = []
-
     for i, row in df.iterrows():
         words = row["query"].lower().split()
         if all(w in seen for w in words):
             drop.append(i)
         else:
             seen.update(words)
-
     return df.drop(drop)
+
 
 
 # =====================================
@@ -197,7 +210,8 @@ def build_rss(xlsx_bytes, filename):
 def run_job(job: dict) -> dict:
     """
     Runs ONE job.
-    Always writes artifacts to disk.
+    Produces ALL feed variants:
+    regular, keywords, minimum, unique, small
     """
     print("WORKER STARTED FOR:", job["job_id"])
     output_dir = job["output_dir"]
@@ -225,38 +239,50 @@ def run_job(job: dict) -> dict:
         gprop
     )
 
-    # 3. Generate XLSX (bytes)
-    rising_xlsx_bytes = build_xlsx(rising_df, job["query_identifier"], timeframe, geo, rising=True)
-    top_xlsx_bytes = build_xlsx(top_df, job["query_identifier"], timeframe, geo, rising=False)
+    base = filenames[0] if isinstance(filenames, list) else filenames
 
-    # 4. Write XLSX to disk
-    base = job["filenames"]
-    rising_xlsx_path = os.path.join(output_dir,  f"{base}-rising.xlsx")
-    with open(rising_xlsx_path, "wb") as f:
-        f.write(rising_xlsx_bytes)
+    VARIANTS = {
+        "": lambda df: df,
+        "keywords": lambda df: keywords_filter(df, keywords),
+        "minimum": lambda df: words_count_filter(df, words_count),
+        "unique": lambda df: unique_queries_filter(df),
+        "small": lambda df: df
+    }
 
-    top_xlsx_path = os.path.join(output_dir,  f"{base}-top.xlsx")
-    with open(top_xlsx_path, "wb") as f:
-        f.write(top_xlsx_bytes)
+    for name, transform in VARIANTS.items():
+        v_rising = transform(rising_df)
+        v_top = transform(top_df)
 
-    # 5. Generate RSS (bytes)
-    rising_rss_bytes = build_rss(rising_xlsx_bytes,  f"{base}-rising.rss")
-    top_rss_bytes = build_rss(top_xlsx_bytes,  f"{base}-top.rss")
+        suffix = f"_{name}" if name else ""
 
-    # 6. Write RSS to disk
-    rising_rss_path = os.path.join(output_dir, f"{base}-rising.rss")
-    with open(rising_rss_path, "wb") as f:
-        f.write(rising_rss_bytes)
+        # XLSX
+        rising_xlsx_bytes = build_xlsx(v_rising, job["query_identifier"], timeframe, geo, rising=True)
+        top_xlsx_bytes = build_xlsx(v_top, job["query_identifier"], timeframe, geo, rising=False)
 
-    top_rss_path = os.path.join(output_dir, f"{base}-top.rss")
-    with open(top_rss_path, "wb") as f:
-        f.write(top_rss_bytes)
+        rising_xlsx_path = os.path.join(output_dir, f"{base}-rising{suffix}.xlsx")
+        top_xlsx_path = os.path.join(output_dir, f"{base}-top{suffix}.xlsx")
 
-    # 7. Return real paths
-    artifacts["rising.xlsx"] = rising_xlsx_path
-    artifacts["top.xlsx"] = top_xlsx_path
-    artifacts["rising.rss"] = rising_rss_path
-    artifacts["top.rss"] = top_rss_path
+        with open(rising_xlsx_path, "wb") as f:
+            f.write(rising_xlsx_bytes)
+        with open(top_xlsx_path, "wb") as f:
+            f.write(top_xlsx_bytes)
+
+        # RSS
+        rising_rss_bytes = build_rss(rising_xlsx_bytes, f"{base}-rising{suffix}.rss")
+        top_rss_bytes = build_rss(top_xlsx_bytes, f"{base}-top{suffix}.rss")
+
+        rising_rss_path = os.path.join(output_dir, f"{base}-rising{suffix}.rss")
+        top_rss_path = os.path.join(output_dir, f"{base}-top{suffix}.rss")
+
+        with open(rising_rss_path, "wb") as f:
+            f.write(rising_rss_bytes)
+        with open(top_rss_path, "wb") as f:
+            f.write(top_rss_bytes)
+
+        artifacts[f"{name or 'regular'}/rising.xlsx"] = rising_xlsx_path
+        artifacts[f"{name or 'regular'}/top.xlsx"] = top_xlsx_path
+        artifacts[f"{name or 'regular'}/rising.rss"] = rising_rss_path
+        artifacts[f"{name or 'regular'}/top.rss"] = top_rss_path
 
     return {
         "status": "success",
