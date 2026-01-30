@@ -1,12 +1,23 @@
-# test_worker.py
-from app.jobs import run_job
+from core.engine import run_job
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-fake_sheet_data = {
-    "query_url": "https://trends.google.com/trends/explore?geo=US&q=google",
-    "interval": 10,
-    "filenames": "google",
-    "keywords": "google,gmail,youtube",
-    "words_count": 3
+job = {
+    "job_id": "TEST",
+    "query_url": "https://trends.google.com/trends/explore?geo=US&q=apple",
+    "interval": 5,
+    "filenames": "apple",
+    "keywords": ["iphone"],
+    "words_count": 2,
+    "api_key": os.getenv("SEARCHAPI_KEY"),
+    "query_identifier": "APPLE",
+    "output_dir": "test_outputs"
 }
 
-run_job("TEST-WORKER", 2, fake_sheet_data)
+os.makedirs("test_outputs", exist_ok=True)
+result = run_job(job)
+
+print("Generated:")
+for k,v in result["artifacts"].items():
+    print(k, "→", v)

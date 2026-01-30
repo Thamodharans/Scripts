@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opml version="1.0">
+	<body>
+		<outline type="rss" text="apple-aio-rising.rss" title="apple-aio-rising.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-rising.rss"/>
+		<outline type="rss" text="apple-aio-top.rss" title="apple-aio-top.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-top.rss"/>
+		<outline type="rss" text="apple-aio-rising_keywords.rss" title="apple-aio-rising_keywords.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-rising_keywords.rss"/>
+		<outline type="rss" text="apple-aio-top_keywords.rss" title="apple-aio-top_keywords.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-top_keywords.rss"/>
+		<outline type="rss" text="apple-aio-rising_minimum.rss" title="apple-aio-rising_minimum.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-rising_minimum.rss"/>
+		<outline type="rss" text="apple-aio-top_minimum.rss" title="apple-aio-top_minimum.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-top_minimum.rss"/>
+		<outline type="rss" text="apple-aio-rising_unique.rss" title="apple-aio-rising_unique.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-rising_unique.rss"/>
+		<outline type="rss" text="apple-aio-top_unique.rss" title="apple-aio-top_unique.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-top_unique.rss"/>
+		<outline type="rss" text="apple-aio-rising_small.rss" title="apple-aio-rising_small.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-rising_small.rss"/>
+		<outline type="rss" text="apple-aio-top_small.rss" title="apple-aio-top_small.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/apple-aio-top_small.rss"/>
+		<outline type="rss" text="google-rising.rss" title="google-rising.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-rising.rss"/>
+		<outline type="rss" text="google-top.rss" title="google-top.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-top.rss"/>
+		<outline type="rss" text="google-rising_keywords.rss" title="google-rising_keywords.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-rising_keywords.rss"/>
+		<outline type="rss" text="google-top_keywords.rss" title="google-top_keywords.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-top_keywords.rss"/>
+		<outline type="rss" text="google-rising_minimum.rss" title="google-rising_minimum.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-rising_minimum.rss"/>
+		<outline type="rss" text="google-top_minimum.rss" title="google-top_minimum.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-top_minimum.rss"/>
+		<outline type="rss" text="google-rising_unique.rss" title="google-rising_unique.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-rising_unique.rss"/>
+		<outline type="rss" text="google-top_unique.rss" title="google-top_unique.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-top_unique.rss"/>
+		<outline type="rss" text="google-rising_small.rss" title="google-rising_small.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-rising_small.rss"/>
+		<outline type="rss" text="google-top_small.rss" title="google-top_small.rss" xmlUrl="https://related-queries-scraper.s3.amazonaws.com/google-top_small.rss"/>
+	</body>
+</opml>
